@@ -10,7 +10,7 @@ flowchart TB
         R3 --> R4[4. gold rebuild]
     end
 
-    A[API REST\nDummyJSON] --> R1
+    A[API REST<br/>DummyJSON] --> R1
     R2 --> B[(bronze/)]
     R2 --> C[(silver/)]
     R4 --> G[(gold/)]

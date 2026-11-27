@@ -36,14 +36,14 @@ O papel do pipeline: **transformar uma integração frágil em um lakehouse conf
 ```mermaid
 flowchart TB
     subgraph EXTRACT["Extract (Python + requests)"]
-        A[API REST DummyJSON\nproducts | carts | users\npaginação limit/skip]
+        A[API REST DummyJSON<br/>products | carts | users<br/>paginação limit/skip]
     end
     subgraph LAKEHOUSE["Lakehouse Delta Lake (data/lakehouse)"]
-        B[(BRONZE\npayload JSON cru + metadados\nde auditoria - append imutável)]
-        C[(SILVER\ndados tipados, snake_case,\ndeduplicados via MERGE)]
-        D[(GOLD\ndim_produto, fato_pedido_item,\nagregações de vendas/KPIs)]
+        B[(BRONZE<br/>payload JSON cru + metadados<br/>de auditoria - append imutável)]
+        C[(SILVER<br/>dados tipados, snake_case,<br/>deduplicados via MERGE)]
+        D[(GOLD<br/>dim_produto, fato_pedido_item,<br/>agregações de vendas/KPIs)]
     end
-    E{{Quality Gate\nregras de qualidade\n-> quality_report.json}}
+    E{{Quality Gate<br/>regras de qualidade<br/>-&gt; quality_report.json}}
     F[BI: Power BI / SQL Analytics]
 
     A --> B --> C --> D --> F
