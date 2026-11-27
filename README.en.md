@@ -35,21 +35,21 @@ The pipeline's job: **turn a fragile integration into a trustworthy lakehouse** 
 ```mermaid
 flowchart TB
     subgraph EXTRACT["Extract (Python + requests)"]
-        A[DummyJSON REST API<br/>products | carts | users<br/>limit/skip pagination]
+        A["DummyJSON REST API<br/>products, carts, users<br/>limit/skip pagination"]
     end
     subgraph LAKEHOUSE["Delta Lake Lakehouse (data/lakehouse)"]
-        B[(BRONZE<br/>raw JSON payload + audit<br/>metadata - immutable append)]
-        C[(SILVER<br/>typed, snake_case,<br/>MERGE-deduplicated)]
-        D[(GOLD<br/>dim_produto, fato_pedido_item,<br/>sales/KPI aggregates)]
+        B["BRONZE<br/>raw JSON payload + audit<br/>metadata - immutable append"]
+        C["SILVER<br/>typed, snake_case,<br/>MERGE-deduplicated"]
+        D["GOLD<br/>dim_produto, fato_pedido_item,<br/>sales/KPI aggregates"]
     end
-    E{{Quality Gate<br/>quality rules<br/>-&gt; quality_report.json}}
-    F[BI: Power BI / SQL Analytics]
+    E["Quality Gate<br/>quality rules<br/>-&gt; quality_report.json"]
+    F["BI: Power BI / SQL Analytics"]
 
     A --> B --> C --> D --> F
     C --> E
     D --> E
-    E --> |critical failure: abort| X((Pipeline stops))
-    E --> |ok| F
+    E -->|critical failure: abort| X["Pipeline stops"]
+    E -->|ok| F
 ```
 
 | Layer | Format | Role | Write pattern |
