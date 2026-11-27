@@ -1,0 +1,24 @@
+[
+  {
+    "id": 1,
+    "title": "Essence Mascara Lash Princess",
+    "description": "The Essence Mascara Lash Princess is a popular mascara known for its volumizing and lengthening effects.",
+    "category": "beauty",
+    "price": 9.99,
+    "discountPercentage": 7.17,
+    "rating": 4.94,
+    "stock": 5,
+    "brand": "Essence"
+  },
+  {
+    "id": 6,
+    "title": "Calvin Klein CK One",
+    "description": "CK One by Calvin Klein is a classic unisex fragrance, known for its fresh and clean composition.",
+    "category": "fragrances",
+    "price": 49.99,
+    "discountPercentage": 11.61,
+    "rating": 4.37,
+    "stock": 29,
+    "brand": "Calvin Klein"
+  }
+]

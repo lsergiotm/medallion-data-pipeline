@@ -1,0 +1,79 @@
+-- ============================================================================
+-- gold_queries.sql — Lógica da camada Gold escrita em Spark SQL
+-- ----------------------------------------------------------------------------
+-- Versão SQL documentada das transformações executadas por src/gold.py
+-- (as queries abaixo são as mesmas usadas no pipeline, com views temporárias
+-- registradas sobre os paths Delta da Silver).
+--
+-- Convenção: delta.`<path>` referencia uma tabela Delta pelo caminho físico.
+-- As views silver_products / silver_carts / silver_users são criadas pelo
+-- pipeline sobre data/lakehouse/silver/{products,carts,users}.
+-- ============================================================================
+
+-- ----------------------------------------------------------------------------
+-- 1) Dimensão de produto — catálogo padronizado para BI
+-- ----------------------------------------------------------------------------
+-- CREATE OR REPLACE TABLE delta.`<GOLD>/dim_produto` AS
+-- SELECT
+--     id,
+--     title                        AS titulo,
+--     COALESCE(brand, 'sem marca') AS marca,
+--     category                     AS categoria,
+--     price                        AS preco,
+--     discount_percentage          AS desconto_pct,
+--     rating,
+--     stock                        AS estoque
+-- FROM silver_products;
+
+-- ----------------------------------------------------------------------------
+-- 2) Fato de itens de pedido — 1 linha por produto x pedido (explode)
+--    Observação: subcampos do array preservam o nome da API (discountedPrice);
+--    o padrão snake_case é aplicado nos aliases.
+-- ----------------------------------------------------------------------------
+-- CREATE OR REPLACE TABLE delta.`<GOLD>/fato_pedido_item` AS
+-- SELECT
+--     c.id                       AS pedido_id,
+--     c.user_id                  AS cliente_id,
+--     item.id                    AS produto_id,
+--     item.title                 AS titulo_produto,
+--     item.quantity              AS quantidade,
+--     item.price                 AS preco_unitario,
+--     item.discountedPrice       AS preco_com_desconto,
+--     item.quantity * item.price AS receita_item,
+--     c.total,
+--     c.discounted_total
+-- FROM silver_carts c
+-- LATERAL VIEW explode(c.products) itens AS item;
+
+-- ----------------------------------------------------------------------------
+-- 3) Agregação de vendas por categoria — priorização de catálogo
+-- ----------------------------------------------------------------------------
+-- CREATE OR REPLACE TABLE delta.`<GOLD>/agg_vendas_categoria` AS
+-- SELECT
+--     d.categoria,
+--     SUM(f.receita_item)         AS receita,
+--     SUM(f.quantidade)           AS qtd_itens,
+--     COUNT(DISTINCT f.pedido_id) AS qtd_pedidos,
+--     ROUND(AVG(d.rating), 2)     AS rating_medio
+-- FROM delta.`<GOLD>/fato_pedido_item` f
+-- JOIN delta.`<GOLD>/dim_produto` d ON f.produto_id = d.id
+-- GROUP BY d.categoria;
+
+-- ----------------------------------------------------------------------------
+-- 4) KPIs gerais — cartões do painel executivo
+-- ----------------------------------------------------------------------------
+-- CREATE OR REPLACE TABLE delta.`<GOLD>/agg_kpis_gerais` AS
+-- SELECT
+--     SUM(f.receita_item)                                          AS receita_total,
+--     COUNT(DISTINCT f.pedido_id)                                  AS qtd_pedidos,
+--     ROUND(SUM(f.receita_item) / COUNT(DISTINCT f.pedido_id), 2)  AS ticket_medio,
+--     COUNT(DISTINCT f.produto_id)                                 AS qtd_produtos,
+--     (SELECT COUNT(DISTINCT id) FROM silver_users)                AS qtd_clientes
+-- FROM delta.`<GOLD>/fato_pedido_item` f;
+
+-- ----------------------------------------------------------------------------
+-- Consulta de consumo (exemplo): ranking de categorias para o painel
+-- ----------------------------------------------------------------------------
+-- SELECT categoria, receita, qtd_pedidos, rating_medio
+-- FROM delta.`<GOLD>/agg_vendas_categoria`
+-- ORDER BY receita DESC;
