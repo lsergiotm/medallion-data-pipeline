@@ -2,6 +2,8 @@
 
 [Read in English](README.en.md)
 
+[![CI](https://github.com/lsergiotm/medallion-data-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/lsergiotm/medallion-data-pipeline/actions/workflows/ci.yml)
+
 Pipeline ELT que consome uma API REST de e-commerce e popula um lakehouse com arquitetura **Medallion (Bronze/Silver/Gold)** usando **PySpark + Delta Lake**, com cargas incrementais idempotentes (MERGE), validações de qualidade de dados e camada Gold pronta para BI.
 
 ---
